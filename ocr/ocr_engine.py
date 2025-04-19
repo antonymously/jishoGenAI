@@ -14,7 +14,7 @@ class DetectedText:
     def __str__(self):
         return f"Text: {self.text}, Confidence: {self.confidence:.2f}, Bounding Box: {self.bounding_box}"
 
-def extract_japanese_text_from_image(image, confidence_threshold = 0.8):
+def extract_japanese_text_from_image(image, confidence_threshold = 0.5):
     """
     Extracts Japanese text from an image object using easyocr.
 
