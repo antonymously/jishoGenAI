@@ -16,7 +16,10 @@ class ChatLLM(BaseLLM):
         super().__init__()
         self.system_message = system_message
 
+    def reset_chat(self):
+        raise NotImplementedError
+
     def invoke(self, prompt: str) -> str:
         raise NotImplementedError
 
-# TODO: add invoke_stream
+    # TODO: add invoke_stream
