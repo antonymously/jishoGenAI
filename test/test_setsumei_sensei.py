@@ -43,7 +43,5 @@ def test_extract_japanese_text_from_image():
     )
     print(translation)
 
-
-
 if __name__ == "__main__":
     test_extract_japanese_text_from_image()
