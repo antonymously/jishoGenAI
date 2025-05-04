@@ -1,9 +1,10 @@
 import streamlit as st
-from utils.screens import list_monitors
+from utils.screens import get_monitors
 
 st.title("Screen Selector")
 
-available_screens = list_monitors()
+monitors = get_monitors()
+available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
 
 selected_screen = st.selectbox("Select a screen:", available_screens)
 

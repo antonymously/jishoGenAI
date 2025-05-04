@@ -1,3 +1,4 @@
-from utils.screens import list_monitors2
+from utils.screens import list_monitors
 
-list_monitors2()
+monitors = list_monitors()
+print(monitors)
