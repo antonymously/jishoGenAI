@@ -8,7 +8,7 @@ def test_extract_japanese_text_from_image():
     """
 
     # Load the image
-    image_path = "./data/sample_screens/ff7.jpg"
+    image_path = "./data/sample_screens/dragon_quest_11.jpg"
     image = Image.open(image_path)
 
     # Extract the text
