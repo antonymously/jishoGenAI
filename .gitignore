@@ -173,4 +173,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+data
+!data/gitkeep
 ./data/screenshots
+data/screenshots/*

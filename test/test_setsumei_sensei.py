@@ -1,3 +1,6 @@
+import sys
+sys.path.append('.')
+
 from ocr.ocr_engine import extract_japanese_text_from_image
 from PIL import Image
 import json

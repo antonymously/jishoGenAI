@@ -1,3 +1,6 @@
+import sys
+sys.path.append('.')
+
 from utils.screens import get_monitors, screenshot_monitor
 
 monitors = get_monitors()

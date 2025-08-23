@@ -1,11 +1,11 @@
 import mss
 from PIL import Image
 
-SCT = mss.mss()
-
 def get_monitors():
-    # List all monitors
-    monitors = SCT.monitors
+    # Initialize mss here to ensure it's in the correct thread context
+    with mss.mss() as sct:
+        # List all monitors
+        monitors = sct.monitors
 
     # NOTE: in windows, monitors[0] is a special combined region
         # covering all monitors.
@@ -27,10 +27,12 @@ def screenshot_monitor(monitor_dict: dict):
         monitor_dict: dict. item from output of SCT.monitors
     '''
 
-    # Capture the screenshot of the specified monitor
-    # NOTE: I think I'm getting an error here because I'm running on WSL
-    # TODO: probably need to try running on windows directly
-    screenshot = SCT.grab(monitor_dict)
+    # Initialize mss here to ensure it's in the correct thread context
+    with mss.mss() as sct:
+        # Capture the screenshot of the specified monitor
+        # NOTE: I think I'm getting an error here because I'm running on WSL
+        # TODO: probably need to try running on windows directly
+        screenshot = sct.grab(monitor_dict)
 
     # Convert the screenshot to a PIL Image for further processing or saving
     img = Image.frombytes(
