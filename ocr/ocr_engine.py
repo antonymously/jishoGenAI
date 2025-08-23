@@ -1,6 +1,7 @@
 import os
 import easyocr
 from PIL import Image
+import numpy as np
 
 READER = easyocr.Reader(['ja'])
 
@@ -25,7 +26,9 @@ def extract_japanese_text_from_image(image, confidence_threshold = 0.5):
         str: The extracted Japanese text.
     """
     try:
-        res = READER.readtext(image)
+        # Convert PIL Image to numpy array as easyocr.Reader.readtext expects it
+        image_np = np.array(image)
+        res = READER.readtext(image_np)
         detected_texts = []
         for detection in res:
             if detection[2] >= confidence_threshold:
