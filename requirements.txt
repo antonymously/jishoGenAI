@@ -1,0 +1,8 @@
+streamlit
+easyocr
+Pillow
+numpy
+python-dotenv
+google-generativeai
+mss
+torch
