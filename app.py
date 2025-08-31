@@ -65,13 +65,41 @@ with left_column:
 
         # Store detected texts in session state
         st.session_state.detected_texts = detected_texts
+        st.session_state.merged_texts = st.session_state.sensei_engine.merge_texts(detected_texts)
+
+    # Display detected sentences/phrases if available
+    if 'merged_texts' in st.session_state and st.session_state.merged_texts:
+        st.subheader("Detected Japanese Sentences/Phrases:")
+        with st.container(height=250, gap=None):
+            for i, merged_text in enumerate(st.session_state.merged_texts):
+                is_selected = (st.session_state.selected_text == merged_text.text)
+                button_type = "primary" if is_selected else "secondary"
+
+                def set_selected_text_merged(dt: DetectedText):
+                    st.session_state.selected_text = dt.text
+                    sensei = st.session_state.sensei_engine
+                    sensei.reset_texts()
+                    sensei.add_texts(st.session_state.detected_texts) # Use original detected texts as context
+                    
+                    result = sensei.translate_text(dt, explain=True)
+                    st.session_state.translation = result.get("translation", "Translation not available.")
+                    st.session_state.explanation = result.get("explanation", "Explanation not available.")
+
+                if st.button(
+                    merged_text.text,
+                    key=f"merged_text_{i}",
+                    type=button_type,
+                    on_click=set_selected_text_merged,
+                    args=(merged_text,)
+                ):
+                    st.write(f"You clicked: {merged_text.text}")
 
     # Display detected texts if available
     if 'detected_texts' in st.session_state and st.session_state.detected_texts:
-        st.subheader("Detected Japanese Texts:")
+        st.subheader("Detected Japanese Texts (Individual):")
         
         # Create a scrollable area
-        with st.container(height=500, gap=None):
+        with st.container(height=300, gap=None):
             for i, detected_text in enumerate(st.session_state.detected_texts):
                 is_selected = (st.session_state.selected_text == detected_text.text)
                 button_type = "primary" if is_selected else "secondary"
