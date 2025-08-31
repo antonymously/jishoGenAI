@@ -1,11 +1,13 @@
+import sys
+sys.path.append('.')
 from llm.gemini_llm import GeminiLLM
 
 def main():
-    gemini_chat = GeminiLLM(
+    gemini_llm = GeminiLLM(
         system_message = "Translate provided Japanese text to English."
     )
 
-    res = gemini_chat.invoke("赤い本がある")
+    res = gemini_llm.invoke(["赤い本がある"])
     print(res)
 
 if __name__ == "__main__":

@@ -21,5 +21,3 @@ class ChatLLM(BaseLLM):
 
     def invoke(self, prompt: str) -> str:
         raise NotImplementedError
-
-    # TODO: add invoke_stream

@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
-from llm.base_llm import ChatLLM
+from llm.base_llm import BaseLLM, ChatLLM
 
 load_dotenv() 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -12,8 +12,8 @@ if not GEMINI_API_KEY:
 GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
 
 # NOTE: API reference here https://ai.google.dev/gemini-api/docs/text-generation
-# TODO: test this
-class GeminiLLM(ChatLLM):
+
+class GeminiChatLLM(ChatLLM):
     
     def __init__(
         self, 
@@ -37,3 +37,30 @@ class GeminiLLM(ChatLLM):
         return response.text
 
     
+class GeminiLLM(BaseLLM):
+    '''
+    A stateless LLM for single-turn conversations.
+    '''
+
+    def __init__(
+        self,
+        system_message: str = "You are a helpful assistant.",
+        model: str = 'gemini-2.0-flash',
+
+    ):
+        self.model = model
+        self.system_message = system_message
+
+    def invoke(self, contents: list) -> str:
+        '''
+        contents can include text and images in the prompt
+        '''
+
+        response = GEMINI_CLIENT.models.generate_content(
+            model = self.model,
+            config = types.GenerateContentConfig(
+                system_instruction = self.system_message,
+            ),
+            contents = contents,
+        )
+        return response.text

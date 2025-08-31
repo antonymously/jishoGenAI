@@ -2,8 +2,8 @@
 from textwrap import dedent
 import json
 
-from llm.base_llm import ChatLLM
-from llm.gemini_llm import GeminiLLM
+from llm.base_llm import BaseLLM
+from llm.gemini_llm import GeminiChatLLM, GeminiLLM
 from ocr.ocr_engine import DetectedText
 from .utils import trim_json_from_text
 
@@ -13,9 +13,11 @@ class SetsumeiSensei:
     '''
 
     def __init__(
-        self, 
-        chat_llm_cls = GeminiLLM,
+        self,
+        llm_cls = GeminiLLM,
+        chat_llm_cls = GeminiChatLLM,
     ):
+        self.llm_cls = llm_cls
 
         self.reset_texts()
 
@@ -75,15 +77,18 @@ class SetsumeiSensei:
             Do not add any further text to your response outside of the json.
         ''')
 
-        self.llm_translate_only = chat_llm_cls(
+        self.llm_translate_only = self.llm_cls(
+            model = 'gemini-1.5-flash',
             system_message = translate_only_system_prompt
         )
 
-        self.llm_translate_explain = chat_llm_cls(
+        self.llm_translate_explain = self.llm_cls(
+            model = 'gemini-1.5-flash',
             system_message = translate_explain_system_prompt
         )
 
-        self.llm_merge_texts = chat_llm_cls(
+        self.llm_merge_texts = self.llm_cls(
+            model = 'gemini-1.5-flash',
             system_message = merge_texts_system_prompt
         )
 
@@ -125,11 +130,9 @@ class SetsumeiSensei:
         )
 
         if explain:
-            self.llm_translate_explain.reset_chat()
-            res = self.llm_translate_explain.invoke(prompt = prompt)
+            res = self.llm_translate_explain.invoke([prompt])
         else:
-            self.llm_translate_only.reset_chat()
-            res = self.llm_translate_only.invoke(prompt = prompt)
+            res = self.llm_translate_only.invoke([prompt])
 
         res_json = trim_json_from_text(res)
         res_dict = json.loads(res_json)
@@ -158,8 +161,7 @@ class SetsumeiSensei:
             segments = "\n".join(text_segments_for_llm)
         )
 
-        self.llm_merge_texts.reset_chat()
-        res = self.llm_merge_texts.invoke(prompt = prompt)
+        res = self.llm_merge_texts.invoke([prompt])
 
         res_json = trim_json_from_text(res)
         merged_texts_data = json.loads(res_json)
