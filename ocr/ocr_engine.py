@@ -2,18 +2,37 @@ import os
 import easyocr
 from PIL import Image
 import numpy as np
+from typing import Optional
 
 READER = easyocr.Reader(['ja'])
 
 class DetectedText:
 
-    def __init__(self, bounding_box, text, confidence):
-        self.bounding_box = bounding_box
+    def __init__(
+        self, 
+        text: str, 
+        bounding_box: Optional[list] = None, 
+        confidence: Optional = None, 
+    ):
+        
         self.text = text
+        self.bounding_box = bounding_box
         self.confidence = confidence
 
     def __str__(self):
         return f"Text: {self.text}, Confidence: {self.confidence:.2f}, Bounding Box: {self.bounding_box}"
+
+    def to_json(self):
+        if self.bounding_box is not None:
+            bbox = [[int(pair[0]), int(pair[1])] for pair in self.bounding_box]
+        else:
+            bbox = None
+
+        return {
+            "text": self.text,
+            "bounding_box": bbox,
+            "confidence": self.confidence
+        }
 
 def extract_japanese_text_from_image(image, confidence_threshold = 0.5):
     """

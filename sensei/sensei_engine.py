@@ -53,12 +53,38 @@ class SetsumeiSensei:
             Do not add any further text to your resoponse outside of the json.
         ''')
 
+        merge_texts_system_prompt = dedent('''
+            You are an assistant that merges segmented text extracted via OCR.
+            You will be provided with a list of text segments, each with its bounding box.
+            Your task is to identify segments that belong to the same logical sentence or phrase and merge them.
+            
+            The texts will likely be in Japanese.
+            Consider that the detected texts may include furigana.
+            You do not have to include all the texts in your outputs.
+            Include only those that make sense as logical sentences or phrases.
+
+            Respond in the following json format:
+            [
+                {
+                    "text": "<merged text 1>",
+                },
+                {
+                    "text": "<merged text 2>",
+                }
+            ]
+            Do not add any further text to your response outside of the json.
+        ''')
+
         self.llm_translate_only = chat_llm_cls(
             system_message = translate_only_system_prompt
         )
 
         self.llm_translate_explain = chat_llm_cls(
             system_message = translate_explain_system_prompt
+        )
+
+        self.llm_merge_texts = chat_llm_cls(
+            system_message = merge_texts_system_prompt
         )
 
     def reset_texts(self):
@@ -84,7 +110,6 @@ class SetsumeiSensei:
             text
             explain: bool. If true, add extra explanation to the translation.
         '''
-        # TODO: test this
 
         if add_text:
             self.add_texts([text])
@@ -110,6 +135,40 @@ class SetsumeiSensei:
         res_dict = json.loads(res_json)
 
         return res_dict
+
+    def merge_texts(
+        self,
+        texts: list[DetectedText],
+    ):
+        '''
+        Uses an LLM to merge segmented detected texts
+        that belong to the same sentence.
+        '''
+        if not texts:
+            return []
+
+        text_segments_for_llm = []
+        for i, dt in enumerate(texts):
+            text_segments_for_llm.append(json.dumps(dt.to_json(), indent = 4))
+        
+        prompt = dedent('''
+            Merge the following text segments. Each segment includes its text and bounding box.
+            {segments}
+        ''').format(
+            segments = "\n".join(text_segments_for_llm)
+        )
+
+        self.llm_merge_texts.reset_chat()
+        res = self.llm_merge_texts.invoke(prompt = prompt)
+
+        res_json = trim_json_from_text(res)
+        merged_texts_data = json.loads(res_json)
+
+        merged_detected_texts = []
+        for item in merged_texts_data:
+            merged_detected_texts.append(DetectedText(text=item['text']))
+        
+        return merged_detected_texts
         
 
         
