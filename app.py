@@ -1,37 +1,38 @@
 import streamlit as st
 import os
 from utils.screens import screenshot_monitor
-from utils.screens import get_monitors
 from ocr.ocr_engine import extract_japanese_text_from_image, DetectedText
 from sensei.sensei_engine import SetsumeiSensei
+from components.settings_modal import settings_modal
+from utils.screens import get_monitors # Import get_monitors here
 
 st.set_page_config(layout="wide")
-st.title("辞書GenAI")
+header_cols = st.columns([0.8, 0.2])
+with header_cols[0]:
+    st.title("辞書GenAI")
+with header_cols[1]:
+    with st.popover("Settings"):
+        settings_modal()
 
 if "sensei_engine" not in st.session_state:
     st.session_state.sensei_engine = SetsumeiSensei()
 
+# Initialize session state for screen selection if not already present
+if "selected_screen_index" not in st.session_state:
+    st.session_state.selected_screen_index = 1 # Default to the 2nd screen
+if "selected_screen" not in st.session_state:
+    monitors = get_monitors()
+    available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
+    st.session_state.selected_screen = available_screens[st.session_state.selected_screen_index]
+
+
 left_column, right_column = st.columns(2)
 
 with left_column:
-    monitors = get_monitors()
-    available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
-
-    # NOTE: default to the 2nd screen
-    selected_screen = st.selectbox(
-        "Select a screen:",
-        available_screens,
-        index = 1,
-    )
-
     if "detected_texts" not in st.session_state:
         st.session_state.detected_texts = []
     if "selected_text" not in st.session_state:
         st.session_state.selected_text = None
-    if "translation" not in st.session_state:
-        st.session_state.translation = "Placeholder for translation"
-    if "explanation" not in st.session_state:
-        st.session_state.explanation = "Placeholder for explanation"
     if "translation" not in st.session_state:
         st.session_state.translation = "Placeholder for translation"
     if "explanation" not in st.session_state:
@@ -43,10 +44,10 @@ with left_column:
         st.session_state.selected_text = None
         st.session_state.translation = "Placeholder for translation"
         st.session_state.explanation = "Placeholder for explanation"
-        # Get the index of the selected screen
-        selected_index = available_screens.index(selected_screen)
         
         # Get the monitor dictionary for the selected screen
+        monitors = get_monitors()
+        selected_index = st.session_state.selected_screen_index
         monitor_to_screenshot = monitors[selected_index]
         
         # Take the screenshot
@@ -124,7 +125,6 @@ with left_column:
                     args=(detected_text,)
                 ):
                     st.write(f"You clicked: {detected_text.text}")
-                    # The translation and explanation will be updated by the callback
 
 with right_column:
     st.subheader("Translation")
