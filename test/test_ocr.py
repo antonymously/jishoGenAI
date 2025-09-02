@@ -15,7 +15,7 @@ def test_extract_japanese_text_from_image():
     image = Image.open(image_path)
 
     # Extract the text
-    res = extract_japanese_text_from_image(image)
+    res = extract_japanese_text_from_image(image, method = "gemini")
     for detected_text in res:
         print(detected_text)
 

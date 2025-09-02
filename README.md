@@ -7,7 +7,7 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 
 - [x] Make functionality to merge detected texts by bounding box or semantics
 - [x] Add a separate modal/screen for settings and configurations
-- [ ] Add options to use screenshot as additional context to text merging, translation and explanation.
+- [ ] Add options to use screenshot as additional context to text merging, translation and explanation. Use GeminiLLM class and add the image to the contents during invoke().
 - [ ] Make LLM invocations asynchronous
 - [ ] Add a full sentence/phrase output with furigana
 - [ ] Generate a nice logo.
