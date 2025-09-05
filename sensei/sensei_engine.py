@@ -77,19 +77,37 @@ class SetsumeiSensei:
             Do not add any further text to your response outside of the json.
         ''')
 
+        add_furigana_system_prompt = dedent('''
+            Japanese TARGET TEXT will be provided.
+            If it is not in Japanese, simply return the same text.
+
+            If it is in Japanese, add furigana to any KANJI words in the text in parentheses.
+            Do not add furigana to katakana or romanji words.
+            Respond only with the Japanese text and furigana, adding nothing else.
+            For example:
+
+            TARGET TEXT: トイレならあの青い建物にあるよ
+            RESPONSE: トイレならあの青い（あおい）建物（たてもの）にあるよ
+        ''')
+
         self.llm_translate_only = self.llm_cls(
-            model = 'gemini-1.5-flash',
+            model = 'gemini-2.0-flash',
             system_message = translate_only_system_prompt
         )
 
         self.llm_translate_explain = self.llm_cls(
-            model = 'gemini-1.5-flash',
+            model = 'gemini-2.0-flash',
             system_message = translate_explain_system_prompt
         )
 
         self.llm_merge_texts = self.llm_cls(
-            model = 'gemini-1.5-flash',
+            model = 'gemini-2.0-flash',
             system_message = merge_texts_system_prompt
+        )
+
+        self.llm_add_furigana = self.llm_cls(
+            model = 'gemini-2.0-flash',
+            system_message = add_furigana_system_prompt
         )
 
     def reset_texts(self):
@@ -172,6 +190,17 @@ class SetsumeiSensei:
         
         return merged_detected_texts
         
+    def add_furigana(self, target_text: DetectedText):
+
+        prompt = dedent('''
+            {target_text}
+        ''').format(
+            target_text = target_text.text,
+        )
+
+        res = self.llm_add_furigana.invoke([prompt])
+
+        return res
 
         
 

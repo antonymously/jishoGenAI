@@ -40,6 +40,8 @@ with left_column:
         st.session_state.translation = "Placeholder for translation"
     if "explanation" not in st.session_state:
         st.session_state.explanation = "Placeholder for explanation"
+    if "reading" not in st.session_state:
+        st.session_state.reading = "Placeholder for reading"
 
     if st.button("Analyze Screen"):
         # Clear previous texts, selected text, translation, and explanation when a new screenshot is taken
@@ -47,6 +49,7 @@ with left_column:
         st.session_state.selected_text = None
         st.session_state.translation = "Placeholder for translation"
         st.session_state.explanation = "Placeholder for explanation"
+        st.session_state.reading = "Placeholder for reading"
         
         # Get the monitor dictionary for the selected screen
         monitors = get_monitors()
@@ -69,10 +72,13 @@ with left_column:
 
         # Store detected texts in session state
         st.session_state.detected_texts = detected_texts
-        st.session_state.merged_texts = st.session_state.sensei_engine.merge_texts(detected_texts)
+        if st.session_state.ocr_method != "gemini":
+            st.session_state.merged_texts = st.session_state.sensei_engine.merge_texts(detected_texts)
+        else:
+            st.session_state.merged_texts = [] # Clear merged texts if Gemini is used
 
     # Display detected sentences/phrases if available
-    if 'merged_texts' in st.session_state and st.session_state.merged_texts:
+    if st.session_state.ocr_method != "gemini" and 'merged_texts' in st.session_state and st.session_state.merged_texts:
         st.subheader("Detected Japanese Sentences/Phrases:")
         with st.container(height=250, gap=None):
             for i, merged_text in enumerate(st.session_state.merged_texts):
@@ -88,6 +94,7 @@ with left_column:
                     result = sensei.translate_text(dt, explain=True)
                     st.session_state.translation = result.get("translation", "Translation not available.")
                     st.session_state.explanation = result.get("explanation", "Explanation not available.")
+                    st.session_state.reading = sensei.add_furigana(dt)
 
                 if st.button(
                     merged_text.text,
@@ -103,7 +110,7 @@ with left_column:
         st.subheader("Detected Japanese Texts (Individual):")
         
         # Create a scrollable area
-        with st.container(height=300, gap=None):
+        with st.container(height=500, gap=None):
             for i, detected_text in enumerate(st.session_state.detected_texts):
                 is_selected = (st.session_state.selected_text == detected_text.text)
                 button_type = "primary" if is_selected else "secondary"
@@ -118,6 +125,7 @@ with left_column:
                     result = sensei.translate_text(dt, explain=True)
                     st.session_state.translation = result.get("translation", "Translation not available.")
                     st.session_state.explanation = result.get("explanation", "Explanation not available.")
+                    st.session_state.reading = sensei.add_furigana(dt)
     
                 # Make each detected text clickable
                 if st.button(
@@ -130,6 +138,8 @@ with left_column:
                     st.write(f"You clicked: {detected_text.text}")
 
 with right_column:
+    st.subheader("Reading")
+    st.text_area("Reading", st.session_state.reading, height=100, label_visibility="collapsed")
     st.subheader("Translation")
     st.text_area("Translation", st.session_state.translation, height=200, label_visibility="collapsed")
     st.subheader("Explanation")

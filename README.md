@@ -6,14 +6,13 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 ## TODO
 
 - [x] Make functionality to merge detected texts by bounding box or semantics
-- [ ] Add output that shows the Japanese text with Furigana
+- [x] Add output that shows the Japanese text with Furigana
 - [ ] Add option to highlight substring for translation.
 - [ ] Add option to disable 'merged_texts'. Default to disabled.
-- [ ] Add function to use Gemini for OCR
+- [x] Add function to use Gemini for OCR
 - [ ] Add a separate modal/screen for settings and configurations
 - [ ] Add options to use screenshot as additional context to text merging, translation and explanation. Use GeminiLLM class and add the image to the contents during invoke().
 - [ ] Make LLM invocations asynchronous
-- [ ] Add a full sentence/phrase output with furigana
 - [ ] Generate a nice logo.
 - [ ] Add screenshots and sample footage to readme
 - [ ] Add usage guide to readme
