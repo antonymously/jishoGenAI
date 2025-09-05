@@ -14,3 +14,13 @@ def settings_modal():
     )
     st.session_state.selected_screen_index = available_screens.index(selected_screen_value)
     st.session_state.selected_screen = selected_screen_value
+
+    # Dropdown for OCR method
+    ocr_methods = ["gemini", "easyocr"]
+    selected_ocr_method = st.selectbox(
+        "Select OCR Method:",
+        ocr_methods,
+        index=ocr_methods.index(st.session_state.get("ocr_method", "gemini")), # Persist selection, default to gemini
+        key="ocr_method_selectbox"
+    )
+    st.session_state.ocr_method = selected_ocr_method

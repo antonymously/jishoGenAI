@@ -25,6 +25,9 @@ if "selected_screen" not in st.session_state:
     available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
     st.session_state.selected_screen = available_screens[st.session_state.selected_screen_index]
 
+# Initialize session state for OCR method if not already present
+if "ocr_method" not in st.session_state:
+    st.session_state.ocr_method = "gemini" # Default to Gemini
 
 left_column, right_column = st.columns(2)
 
@@ -62,7 +65,7 @@ with left_column:
         screenshot_img.save(save_path)
 
         # Perform OCR on the screenshot
-        detected_texts = extract_japanese_text_from_image(screenshot_img)
+        detected_texts = extract_japanese_text_from_image(screenshot_img, method=st.session_state.ocr_method)
 
         # Store detected texts in session state
         st.session_state.detected_texts = detected_texts
