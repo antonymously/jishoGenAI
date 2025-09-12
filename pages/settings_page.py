@@ -1,7 +1,11 @@
 import streamlit as st
 from utils.screens import get_monitors
 
-def settings_modal():
+def settings_page():
+    st.title("Settings")
+    st.write("This is the settings page.")
+    
+    # Example settings (will be moved from settings_modal.py)
     monitors = get_monitors()
     available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
 
@@ -24,3 +28,7 @@ def settings_modal():
         key="ocr_method_selectbox"
     )
     st.session_state.ocr_method = selected_ocr_method
+
+    def navigate_to_main():
+        st.session_state.page = "main"
+    st.button("Save", on_click=navigate_to_main)

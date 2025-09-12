@@ -10,6 +10,7 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [ ] Add option to highlight substring for translation.
 - [ ] Add option to disable 'merged_texts'. Default to disabled.
 - [x] Add function to use Gemini for OCR
+- [ ] Allow ordered multi-select of detected texts prior to translation. Or add a translate mode 'single/multi' option
 - [ ] Add a separate modal/screen for settings and configurations
 - [ ] Add options to use screenshot as additional context to text merging, translation and explanation. Use GeminiLLM class and add the image to the contents during invoke().
 - [ ] Make LLM invocations asynchronous
@@ -25,6 +26,7 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [ ] Allow use of other LLM providers.
 - [ ] Allow use of local LLM.
 - [ ] Provide alternative OCR options.
+- [ ] Fine tune a small model for OCR on Japanese game screenshots.
 
 ## Installation and Setup
 
