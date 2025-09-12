@@ -5,11 +5,21 @@ from ocr.ocr_engine import extract_japanese_text_from_image, DetectedText
 from sensei.sensei_engine import SetsumeiSensei
 from pages.settings_page import settings_page
 from utils.screens import get_monitors # Import get_monitors here
+from utils.settings_manager import load_settings
 
 st.set_page_config(layout="wide")
 
+# Load settings on startup
+initial_settings = load_settings()
+
 if "page" not in st.session_state:
     st.session_state.page = "main"
+
+# Initialize session state with loaded settings or defaults
+if "selected_screen_index" not in st.session_state:
+    st.session_state.selected_screen_index = initial_settings.get("selected_screen_index", 1) # Default to the 2nd screen
+if "ocr_method" not in st.session_state:
+    st.session_state.ocr_method = initial_settings.get("ocr_method", "gemini") # Default to Gemini
 
 def main_page():
     header_cols = st.columns([0.8, 0.2])
@@ -24,16 +34,10 @@ def main_page():
         st.session_state.sensei_engine = SetsumeiSensei()
 
     # Initialize session state for screen selection if not already present
-    if "selected_screen_index" not in st.session_state:
-        st.session_state.selected_screen_index = 1 # Default to the 2nd screen
     if "selected_screen" not in st.session_state:
         monitors = get_monitors()
         available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
         st.session_state.selected_screen = available_screens[st.session_state.selected_screen_index]
-
-    # Initialize session state for OCR method if not already present
-    if "ocr_method" not in st.session_state:
-        st.session_state.ocr_method = "gemini" # Default to Gemini
 
     left_column, right_column = st.columns(2)
 

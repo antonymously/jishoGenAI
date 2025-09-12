@@ -1,5 +1,6 @@
 import streamlit as st
 from utils.screens import get_monitors
+from utils.settings_manager import save_settings
 
 def settings_page():
     st.title("Settings")
@@ -30,5 +31,11 @@ def settings_page():
     st.session_state.ocr_method = selected_ocr_method
 
     def navigate_to_main():
+        settings = {
+            "selected_screen_index": st.session_state.selected_screen_index,
+            "ocr_method": st.session_state.ocr_method,
+            # Add other settings here as they are introduced
+        }
+        save_settings(settings)
         st.session_state.page = "main"
     st.button("Save", on_click=navigate_to_main)
