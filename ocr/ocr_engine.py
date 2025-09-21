@@ -18,6 +18,7 @@ GEMINI_OCR_SYSTEM_PROMPT = dedent('''
 
     Respond with a list of strings only. No extra text.
     The strings should contain the Japanese texts you see on the screen.
+    If the text on screen includes furigana, EXCLUDE FURIGANA from your detected response.
 
     EXAMPLE RESPONSE:
     [
