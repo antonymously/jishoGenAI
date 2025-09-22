@@ -39,6 +39,9 @@ class SetsumeiSensei:
                 "translation": "<translation of the TARGET TEXT>"
             }
 
+            As much as possible, include only the TARGET TEXT in your translation.
+            Use the CONTEXT TEXTS only to provide an accurate translation.
+            But avoid including the CONTEXT TEXTS in the translation.
             Do not add any further text to your resoponse outside of the json.
         ''')
 
@@ -52,6 +55,9 @@ class SetsumeiSensei:
                 "explanation": "<brief explanation>"
             }
 
+            As much as possible, include only the TARGET TEXT in your translation.
+            You may refer to the CONTEXT TEXTS in the explanation.
+            But avoid including the CONTEXT TEXTS in the translation.
             Do not add any further text to your resoponse outside of the json.
         ''')
 
@@ -144,7 +150,7 @@ class SetsumeiSensei:
             {context_texts}
         ''').format(
             target_text = target_text.text,
-            context_texts = "\n".join([ct.text for ct in self.texts]),
+            context_texts = "\n".join([ct.text for ct in self.texts if ct.text != target_text.text]),
         )
 
         if explain:
