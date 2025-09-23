@@ -29,8 +29,7 @@ class SetsumeiSensei:
             A TARGET TEXT will be provided.
             Translate the TARGET TEXT to English.
 
-            Furthermore, other CONTEXT TEXTS that have appeared previously may be provided.
-            Use the CONTEXT TEXTS to provide an in-context translation of the TARGET TEXT.
+            Furthermore, other CONTEXT TEXTS that appear on screen may be provided.
         ''')
 
         translate_only_system_prompt = base_system_prompt + dedent('''
@@ -40,9 +39,10 @@ class SetsumeiSensei:
             }
 
             As much as possible, include only the TARGET TEXT in your translation.
-            Use the CONTEXT TEXTS only to provide an accurate translation.
-            But avoid including the CONTEXT TEXTS in the translation.
-            Do not add any further text to your resoponse outside of the json.
+            Use the CONTEXT TEXTS to provide an accurate translation.
+            You may assume that the CONTEXT TEXTS may be connected to the TARGET TEXT.
+            But avoid including other CONTEXT TEXTS in the translation.
+            Do not add any further text to your response outside of the json.
         ''')
 
         translate_explain_system_prompt = base_system_prompt + dedent('''
@@ -57,8 +57,9 @@ class SetsumeiSensei:
 
             As much as possible, include only the TARGET TEXT in your translation.
             You may refer to the CONTEXT TEXTS in the explanation.
-            But avoid including the CONTEXT TEXTS in the translation.
-            Do not add any further text to your resoponse outside of the json.
+            You may assume that the CONTEXT TEXTS may be connected to the TARGET TEXT.
+            But avoid including other CONTEXT TEXTS in the translation.
+            Do not add any further text to your response outside of the json.
         ''')
 
         merge_texts_system_prompt = dedent('''
@@ -150,7 +151,7 @@ class SetsumeiSensei:
             {context_texts}
         ''').format(
             target_text = target_text.text,
-            context_texts = "\n".join([ct.text for ct in self.texts if ct.text != target_text.text]),
+            context_texts = "\n".join([ct.text for ct in self.texts]),
         )
 
         if explain:
