@@ -31,7 +31,8 @@ def screenshot_window(window_title: str):
 
         # using this suggested approach instead
         if not target_window.isActive:
-            target_window.restore()
+            pyautogui.press('altleft')
+            target_window.activate()
 
         time.sleep(0.1) # Give it a moment to activate
 

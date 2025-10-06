@@ -21,9 +21,15 @@ def settings_page():
         if "selected_window_title" in st.session_state and st.session_state.selected_window_title in available_windows:
             default_index = available_windows.index(st.session_state.selected_window_title)
 
-        def update_window_preview():
-            if st.session_state.selected_window_selectbox != "No windows available":
-                screenshot = screenshot_window(st.session_state.selected_window_selectbox)
+        def update_window_selection():
+            # This function is called when the selectbox value changes
+            selected_value = st.session_state.selected_window_selectbox
+            st.session_state.selected_window_title = selected_value
+            st.session_state.selected_window_index = available_windows.index(selected_value) if selected_value in available_windows else 0
+            
+            # Also update the preview image
+            if selected_value != "No windows available":
+                screenshot = screenshot_window(selected_value)
                 if screenshot:
                     st.session_state.window_preview_image = screenshot
                 else:
@@ -31,19 +37,23 @@ def settings_page():
             else:
                 st.session_state.window_preview_image = None
 
+        # Determine the default index for the selectbox
+        current_selected_title = st.session_state.get("selected_window_title", available_windows[0] if available_windows else "No windows available")
+        default_index = available_windows.index(current_selected_title) if current_selected_title in available_windows else 0
+
         selected_window_value = st.selectbox(
             "Select a window:",
             available_windows,
             index=default_index,
             key="selected_window_selectbox",
-            on_change=update_window_preview # Add on_change callback
+            on_change=update_window_selection # Use the new callback
         )
-        # Update the index based on the selected value
-        selected_window_index = available_windows.index(selected_window_value) if selected_window_value in available_windows else 0
-
-    # Store the selected window title and a dummy index in session state
-    st.session_state.selected_window_index = selected_window_index # Keep for compatibility if needed elsewhere
-    st.session_state.selected_window_title = selected_window_value
+        
+        # No need for conditional update here, as on_change handles it
+        # Ensure initial state is set if not already
+        if "selected_window_title" not in st.session_state:
+            st.session_state.selected_window_title = selected_window_value
+            st.session_state.selected_window_index = default_index
 
     # Initialize window_preview_image in session state if not already present
     if "window_preview_image" not in st.session_state:
