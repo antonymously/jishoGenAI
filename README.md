@@ -20,7 +20,8 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [ ] Add more memory to Setsumei Sensei. Recall text from previous screens to gain more context.
 - [ ] Allow user to highlight/select text to be explained if it is a substring of the detected text.
 - [ ] Allow user to ask follow-up questions on the explanation of Setsumei Sensei.
-- [ ] Option to capture specific game screen rather than full monitor screen.
+- [x] Capture specific windows instead of full screens.
+- [x] Add preview of selected window in settings page.
 - [ ] Option to automatically screenshot and analyze while gameplay is happening.
 - [ ] Configurations for current learning level of user.
 - [ ] Allow use of other LLM providers.

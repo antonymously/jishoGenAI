@@ -1,5 +1,5 @@
 import streamlit as st
-from utils.windows import get_open_windows
+from utils.windows import get_open_windows, screenshot_window # ADD screenshot_window
 from utils.settings_manager import save_settings
 
 def settings_page():
@@ -21,11 +21,22 @@ def settings_page():
         if "selected_window_title" in st.session_state and st.session_state.selected_window_title in available_windows:
             default_index = available_windows.index(st.session_state.selected_window_title)
 
+        def update_window_preview():
+            if st.session_state.selected_window_selectbox != "No windows available":
+                screenshot = screenshot_window(st.session_state.selected_window_selectbox)
+                if screenshot:
+                    st.session_state.window_preview_image = screenshot
+                else:
+                    st.session_state.window_preview_image = None
+            else:
+                st.session_state.window_preview_image = None
+
         selected_window_value = st.selectbox(
             "Select a window:",
             available_windows,
             index=default_index,
-            key="selected_window_selectbox"
+            key="selected_window_selectbox",
+            on_change=update_window_preview # Add on_change callback
         )
         # Update the index based on the selected value
         selected_window_index = available_windows.index(selected_window_value) if selected_window_value in available_windows else 0
@@ -33,6 +44,27 @@ def settings_page():
     # Store the selected window title and a dummy index in session state
     st.session_state.selected_window_index = selected_window_index # Keep for compatibility if needed elsewhere
     st.session_state.selected_window_title = selected_window_value
+
+    # Initialize window_preview_image in session state if not already present
+    if "window_preview_image" not in st.session_state:
+        st.session_state.window_preview_image = None
+
+    # Call the update function once on page load to display initial preview
+    # This needs to be done after selected_window_value is determined
+    if selected_window_value != "No windows available" and st.session_state.window_preview_image is None:
+        # Manually trigger the screenshot for initial display
+        screenshot = screenshot_window(selected_window_value)
+        if screenshot:
+            st.session_state.window_preview_image = screenshot
+        else:
+            st.session_state.window_preview_image = None
+
+    # Display window preview
+    if st.session_state.window_preview_image is not None:
+        st.subheader("Window Preview:")
+        st.image(st.session_state.window_preview_image, width=400) # Set width to 400 pixels
+    elif selected_window_value != "No windows available":
+        st.info("Select a window to see its preview.")
 
     # Dropdown for OCR method
     ocr_methods = ["gemini", "easyocr"]
