@@ -1,10 +1,11 @@
 import streamlit as st
 import os
-from utils.screens import screenshot_monitor
+# from utils.screens import screenshot_monitor # REMOVE THIS LINE
 from ocr.ocr_engine import extract_japanese_text_from_image, DetectedText
 from sensei.sensei_engine import SetsumeiSensei
 from pages.settings_page import settings_page
-from utils.screens import get_monitors # Import get_monitors here
+# from utils.screens import get_monitors # REMOVE THIS LINE
+from utils.windows import get_open_windows, screenshot_window # ADD THIS LINE
 from utils.settings_manager import load_settings
 
 st.set_page_config(layout="wide")
@@ -16,8 +17,13 @@ if "page" not in st.session_state:
     st.session_state.page = "main"
 
 # Initialize session state with loaded settings or defaults
-if "selected_screen_index" not in st.session_state:
-    st.session_state.selected_screen_index = initial_settings.get("selected_screen_index", 1) # Default to the 2nd screen
+# REMOVE THIS BLOCK:
+# if "selected_screen_index" not in st.session_state:
+#     st.session_state.selected_screen_index = initial_settings.get("selected_screen_index", 1)
+
+# ADD THIS BLOCK for window selection:
+if "selected_window_title" not in st.session_state:
+    st.session_state.selected_window_title = initial_settings.get("selected_window_title", "No windows available")
 if "ocr_method" not in st.session_state:
     st.session_state.ocr_method = initial_settings.get("ocr_method", "gemini") # Default to Gemini
 
@@ -33,11 +39,20 @@ def main_page():
     if "sensei_engine" not in st.session_state:
         st.session_state.sensei_engine = SetsumeiSensei()
 
-    # Initialize session state for screen selection if not already present
-    if "selected_screen" not in st.session_state:
-        monitors = get_monitors()
-        available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
-        st.session_state.selected_screen = available_screens[st.session_state.selected_screen_index]
+    # Initialize session state for window selection if not already present
+    # REMOVE THIS BLOCK:
+    # if "selected_screen" not in st.session_state:
+    #     monitors = get_monitors()
+    #     available_screens = ["Display {}".format(i + 1) for i in range(len(monitors))]
+    #     st.session_state.selected_screen = available_screens[st.session_state.selected_screen_index]
+
+    # ADD THIS BLOCK for window selection:
+    if "selected_window_title" not in st.session_state:
+        open_windows = get_open_windows()
+        if open_windows:
+            st.session_state.selected_window_title = open_windows[0]
+        else:
+            st.session_state.selected_window_title = "No windows available"
 
     left_column, right_column = st.columns(2)
 
@@ -53,7 +68,7 @@ def main_page():
         if "reading" not in st.session_state:
             st.session_state.reading = "Placeholder for reading"
 
-        if st.button("Analyze Screen"):
+        if st.button("Analyze Window"): # CHANGED BUTTON TEXT
             # Clear previous texts, selected text, translation, and explanation when a new screenshot is taken
             st.session_state.detected_texts = []
             st.session_state.selected_text = None
@@ -61,13 +76,15 @@ def main_page():
             st.session_state.explanation = "Placeholder for explanation"
             st.session_state.reading = "Placeholder for reading"
             
-            # Get the monitor dictionary for the selected screen
-            monitors = get_monitors()
-            selected_index = st.session_state.selected_screen_index
-            monitor_to_screenshot = monitors[selected_index]
-            
-            # Take the screenshot
-            screenshot_img = screenshot_monitor(monitor_to_screenshot)
+            # --- Capture the selected window ---
+            selected_window_title = st.session_state.selected_window_title
+            if selected_window_title == "No windows available":
+                st.warning("No window selected for analysis.")
+                return # Exit if no window is selected
+
+            screenshot_img = screenshot_window(selected_window_title) # USE THE NEW FUNCTION
+            if screenshot_img is None:
+                return # Exit if screenshot failed
             
             # Define the save path
             screenshot_dir = "./data/screenshots"
