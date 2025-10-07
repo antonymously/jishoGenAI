@@ -12,6 +12,7 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [x] Add function to use Gemini for OCR
 - [ ] Allow ordered multi-select of detected texts prior to translation. Or add a translate mode 'single/multi' option
 - [x] Add a separate modal/screen for settings and configurations
+- [ ] In settings page, add preview of the screen being captured
 - [ ] Add options to use screenshot as additional context to text merging, translation and explanation. Use GeminiLLM class and add the image to the contents during invoke().
 - [ ] Make LLM invocations asynchronous
 - [ ] Generate a nice logo.
@@ -20,7 +21,6 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [ ] Add more memory to Setsumei Sensei. Recall text from previous screens to gain more context.
 - [ ] Allow user to highlight/select text to be explained if it is a substring of the detected text.
 - [ ] Allow user to ask follow-up questions on the explanation of Setsumei Sensei.
-- [ ] Option to capture specific game screen rather than full monitor screen.
 - [ ] Option to automatically screenshot and analyze while gameplay is happening.
 - [ ] Configurations for current learning level of user.
 - [ ] Allow use of other LLM providers.
