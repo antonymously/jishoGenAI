@@ -1,6 +1,10 @@
 # This file contains utility functions for the "sensei" layer
 
 import json
+import MeCab # For Japanese tokenization
+
+# Initialize MeCab tagger once
+_mecab_tagger = MeCab.Tagger("-Owakati") # -Owakati outputs only words separated by spaces
 
 def trim_json_from_text(text: str) -> str:
     """
@@ -42,3 +46,16 @@ def trim_json_from_text(text: str) -> str:
         return "" # No ending brace or bracket found, or ending before start
 
     return text[start_index:end_index + 1]
+
+def tokenize_japanese_text(text: str) -> list[str]:
+    """
+    Tokenizes input Japanese text string into words using MeCab.
+
+    Args:
+        text: The input Japanese string.
+
+    Returns:
+        A list of strings, where each string is a tokenized word.
+    """
+    # _mecab_tagger was initialized globally at the top of the file
+    return _mecab_tagger.parse(text).strip().split()

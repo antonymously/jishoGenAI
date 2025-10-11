@@ -6,6 +6,7 @@ from sensei.sensei_engine import SetsumeiSensei
 from pages.settings_page import settings_page
 from utils.screens import get_monitors # Import get_monitors here
 from utils.settings_manager import load_settings
+from sensei.utils import tokenize_japanese_text # Import the new tokenizer
 
 st.set_page_config(layout="wide")
 
@@ -146,6 +147,11 @@ def main_page():
                         args=(detected_text,)
                     ):
                         st.write(f"You clicked: {detected_text.text}")
+
+        # Display tokenized words if a text is selected
+        if st.session_state.selected_text:
+            # Inject custom CSS for horizontal scrolling and no button spacing
+            pass
 
     with right_column:
         st.subheader("Reading")

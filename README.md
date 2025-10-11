@@ -7,12 +7,13 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 
 - [x] Make functionality to merge detected texts by bounding box or semantics
 - [x] Add output that shows the Japanese text with Furigana
-- [ ] Add option to highlight substring for translation.
+- [ ] Add option to highlight substring for translation. NOTE: This seems difficult in native Streamlit
+- [ ] On selection of detected text, tokenize it into words. Display these words below the detected text as additional options for translation.
 - [ ] Add option to disable 'merged_texts'. Default to disabled.
 - [x] Add function to use Gemini for OCR
 - [ ] Allow ordered multi-select of detected texts prior to translation. Or add a translate mode 'single/multi' option
 - [x] Add a separate modal/screen for settings and configurations
-- [ ] In settings page, add preview of the screen being captured
+- [x] In settings page, add preview of the screen being captured
 - [ ] Add options to use screenshot as additional context to text merging, translation and explanation. Use GeminiLLM class and add the image to the contents during invoke().
 - [ ] Make LLM invocations asynchronous
 - [ ] Generate a nice logo.
