@@ -118,7 +118,7 @@ def main_page():
 
         # Display detected texts if available
         if 'detected_texts' in st.session_state and st.session_state.detected_texts:
-            st.subheader("Detected Japanese Texts (Individual):")
+            st.subheader("Detected Japanese Texts:")
             
             # Create a scrollable area
             with st.container(height=500, gap=None):
@@ -150,8 +150,23 @@ def main_page():
 
         # Display tokenized words if a text is selected
         if st.session_state.selected_text:
-            # Inject custom CSS for horizontal scrolling and no button spacing
-            pass
+
+            words = tokenize_japanese_text(st.session_state.selected_text)
+            st.subheader("Individual Words:")
+
+            # Create a container
+            with st.container(
+                height = "content", 
+                horizontal = True,
+                gap = None,
+            ):
+                # add buttons for the words
+                # TODO: add funcitonality
+                for i, word in enumerate(words):
+                    st.button(
+                        word,
+                        key=f"word_{i}",
+                    )
 
     with right_column:
         st.subheader("Reading")
