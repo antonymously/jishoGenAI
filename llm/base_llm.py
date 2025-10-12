@@ -1,9 +1,12 @@
 class BaseLLM:
-    def __init__(self):
-        pass
+    def __init__(self, system_message: str = ""):
+        self.system_message = system_message
 
     def invoke(self, prompt: str) -> str:
         raise NotImplementedError
+
+    def set_system_message(self, system_message: str = ""):
+        self.system_message = system_message
 
 
 class ChatLLM(BaseLLM):

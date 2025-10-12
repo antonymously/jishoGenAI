@@ -1,6 +1,7 @@
 # This file contains the core logic for the "sensei" layer
 from textwrap import dedent
 import json
+from typing import Optional
 
 from llm.base_llm import BaseLLM
 from llm.gemini_llm import GeminiChatLLM, GeminiLLM
@@ -21,7 +22,7 @@ class SetsumeiSensei:
 
         self.reset_texts()
 
-        base_system_prompt = dedent('''
+        self.base_system_prompt = dedent('''
             You are an assistant to an English speaking Japanese LEARNER.
             The LEARNER is consuming Japanese media.
             The Japanese text from the media has been extracted via OCR.
@@ -32,7 +33,13 @@ class SetsumeiSensei:
             Furthermore, other CONTEXT TEXTS that appear on screen may be provided.
         ''')
 
-        translate_only_system_prompt = base_system_prompt + dedent('''
+        self.target_words_instruction = dedent('''
+            The TARGET TEXT may contain <target></target> tags.
+            If so, you are only to translate and/or explain the text within the TARGET TAGS.
+            The rest of the TARGET TEXT is provided only for context.
+        ''')
+
+        self.translate_only_system_prompt = self.base_system_prompt + dedent('''
             Respond in the following json format:
             {
                 "translation": "<translation of the TARGET TEXT>"
@@ -45,7 +52,7 @@ class SetsumeiSensei:
             Do not add any further text to your response outside of the json.
         ''')
 
-        translate_explain_system_prompt = base_system_prompt + dedent('''
+        self.translate_explain_system_prompt = self.base_system_prompt + dedent('''
             Also add brief explanation of the translated text.
             Explain any language nuiances the LEARNER might not be familiar with.
             
@@ -62,7 +69,7 @@ class SetsumeiSensei:
             Do not add any further text to your response outside of the json.
         ''')
 
-        merge_texts_system_prompt = dedent('''
+        self.merge_texts_system_prompt = dedent('''
             You are an assistant that merges segmented text extracted via OCR.
             You will be provided with a list of text segments, each with its bounding box.
             Your task is to identify segments that belong to the same logical sentence or phrase and merge them.
@@ -84,7 +91,7 @@ class SetsumeiSensei:
             Do not add any further text to your response outside of the json.
         ''')
 
-        add_furigana_system_prompt = dedent('''
+        self.add_furigana_system_prompt = dedent('''
             Japanese TARGET TEXT will be provided.
             If it is not in Japanese, simply return the same text.
 
@@ -97,24 +104,19 @@ class SetsumeiSensei:
             RESPONSE: トイレならあの青い（あおい）建物（たてもの）にあるよ
         ''')
 
-        self.llm_translate_only = self.llm_cls(
-            model = 'gemini-2.0-flash',
-            system_message = translate_only_system_prompt
-        )
-
         self.llm_translate_explain = self.llm_cls(
             model = 'gemini-2.0-flash',
-            system_message = translate_explain_system_prompt
+            system_message = self.translate_explain_system_prompt
         )
 
         self.llm_merge_texts = self.llm_cls(
             model = 'gemini-2.0-flash',
-            system_message = merge_texts_system_prompt
+            system_message = self.merge_texts_system_prompt
         )
 
         self.llm_add_furigana = self.llm_cls(
             model = 'gemini-2.0-flash',
-            system_message = add_furigana_system_prompt
+            system_message = self.add_furigana_system_prompt
         )
 
     def reset_texts(self):
@@ -128,6 +130,7 @@ class SetsumeiSensei:
         target_text: DetectedText, 
         explain: bool = False,
         add_text: bool = False,
+        target_words: Optional[str] = None,
     ):
         '''
         Translate the detected text
@@ -138,16 +141,37 @@ class SetsumeiSensei:
 
         Args:
             text
-            explain: bool. If true, add extra explanation to the translation.
+            explain: bool. Optional. If true, add extra explanation to the translation.
+            add_text: bool. Optional. Whether to add the target_text to self.texts for future context.
+            target_words str. Optional.
+                it contains the same string as target_text
+                but contains <target></target> on word/s to be translated
+                ex.
+                    私の<target>頭が痛い</target>ですよ。
         '''
-        # TODO: add a 'target_word' option 
-            # it contains the same string as target_text
-            # but contains <target></target> on word/s to be translated
-            # ex.
-                # 私の<target>頭が痛い</target>ですよ。
 
         if add_text:
             self.add_texts([text])
+
+        # set self.llm_translate_explain system prompt
+        if target_words is not None:
+            if explain:
+                self.llm_translate_explain.set_system_message(
+                    self.translate_explain_system_prompt + self.target_words_instruction
+                )
+            else:
+                self.llm_translate_explain.set_system_message(
+                    self.translate_only_system_prompt + self.target_words_instruction
+                )
+        else:
+            if explain:
+                self.llm_translate_explain.set_system_message(
+                    self.translate_explain_system_prompt
+                )
+            else:
+                self.llm_translate_explain.set_system_message(
+                    self.translate_only_system_prompt
+                )
 
         prompt = dedent('''
             TARGET TEXT:
@@ -159,10 +183,8 @@ class SetsumeiSensei:
             context_texts = "\n".join([ct.text for ct in self.texts]),
         )
 
-        if explain:
-            res = self.llm_translate_explain.invoke([prompt])
-        else:
-            res = self.llm_translate_only.invoke([prompt])
+        res = self.llm_translate_explain.invoke([prompt])
+
 
         res_json = trim_json_from_text(res)
         res_dict = json.loads(res_json)
@@ -202,7 +224,10 @@ class SetsumeiSensei:
         
         return merged_detected_texts
         
-    def add_furigana(self, target_text: DetectedText):
+    def add_furigana(
+        self, 
+        target_text: DetectedText,
+    ):
 
         prompt = dedent('''
             {target_text}

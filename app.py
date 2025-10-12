@@ -159,18 +159,18 @@ def main_page():
 
         # Display tokenized words if a text is selected
         if st.session_state.selected_text:
-            # TODO: capture the selected word/s
+            # DONE: capture the selected word/s
                 # save the selected indices st.session_state.selected_word_idxs
 
-                # make a utility function in utils.helper.py
-                    # that takes the selected_text and the selected_word_idxs
-                    # outputs a string such that the selected text is in <target></target> tags
-                    # ex.
-                        # 私の<target>頭が痛い</target>ですよ。
-                    # if the selected words are dis-joint
-                        # wrap them as if they are joint
-                        # include all words in between in the target
-                        # but maintain the selected indices in selected_word_idxs
+            # DONE: make a utility function in utils.helper.py
+                # that takes the selected_text and the selected_word_idxs
+                # outputs a string such that the selected text is in <target></target> tags
+                # ex.
+                    # 私の<target>頭が痛い</target>ですよ。
+                # if the selected words are dis-joint
+                    # wrap them as if they are joint
+                    # include all words in between in the target
+                    # but maintain the selected indices in selected_word_idxs
 
             words = tokenize_japanese_text(st.session_state.selected_text)
             st.subheader("Individual Words:")
