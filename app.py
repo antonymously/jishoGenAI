@@ -146,7 +146,7 @@ def main_page():
         # Display detected sentences/phrases if available
         if st.session_state.ocr_method != "gemini" and 'merged_texts' in st.session_state and st.session_state.merged_texts:
             st.subheader("Detected Japanese Sentences/Phrases:")
-            with st.container(height=250, gap=None):
+            with st.container(height=200, gap=None):
                 for i, merged_text in enumerate(st.session_state.merged_texts):
                     is_selected = (st.session_state.selected_text == merged_text.text)
                     button_type = "primary" if is_selected else "secondary"
@@ -170,7 +170,7 @@ def main_page():
             st.subheader("Detected Japanese Texts:")
             
             # Create a scrollable area
-            with st.container(height=500, gap=None):
+            with st.container(height=400, gap=None):
                 for i, detected_text in enumerate(st.session_state.detected_texts):
                     is_selected = (st.session_state.selected_text == detected_text.text)
                     button_type = "primary" if is_selected else "secondary"
@@ -233,7 +233,17 @@ def main_page():
                             st.session_state.selected_word_idxs.remove(word_idx)
                         else:
                             st.session_state.selected_word_idxs.append(word_idx)
+
+                        # automatically select all words in between
+                        min_idx = min(st.session_state.selected_word_idxs)
+                        max_idx = max(st.session_state.selected_word_idxs)
+
+                        if max_idx > min_idx:
+                            for idx in range(min_idx + 1, max_idx):
+                                st.session_state.selected_word_idxs.append(idx)
+
                         st.session_state.selected_word_idxs.sort() # Keep indices sorted
+
                         update_translation_display() # Trigger translation update
 
                     st.button(
@@ -255,9 +265,9 @@ def main_page():
         st.subheader("Reading")
         st.text_area("Reading", st.session_state.reading, height=100, label_visibility="collapsed")
         st.subheader("Translation")
-        st.text_area("Translation", st.session_state.translation, height=200, label_visibility="collapsed")
+        st.text_area("Translation", st.session_state.translation, height=150, label_visibility="collapsed")
         st.subheader("Explanation")
-        st.text_area("Explanation", st.session_state.explanation, height=300, label_visibility="collapsed")
+        st.text_area("Explanation", st.session_state.explanation, height=200, label_visibility="collapsed")
 
 def app():
     if "page" not in st.session_state:
