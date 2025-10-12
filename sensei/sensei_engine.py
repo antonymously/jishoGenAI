@@ -140,6 +140,11 @@ class SetsumeiSensei:
             text
             explain: bool. If true, add extra explanation to the translation.
         '''
+        # TODO: add a 'target_word' option 
+            # it contains the same string as target_text
+            # but contains <target></target> on word/s to be translated
+            # ex.
+                # 私の<target>頭が痛い</target>ですよ。
 
         if add_text:
             self.add_texts([text])

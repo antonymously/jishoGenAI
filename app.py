@@ -7,6 +7,7 @@ from pages.settings_page import settings_page
 from utils.screens import get_monitors # Import get_monitors here
 from utils.settings_manager import load_settings
 from sensei.utils import tokenize_japanese_text # Import the new tokenizer
+from utils.helper import label_target_words
 
 st.set_page_config(layout="wide")
 
@@ -51,6 +52,8 @@ def main_page():
             st.session_state.translation = "Placeholder for translation"
         if "explanation" not in st.session_state:
             st.session_state.explanation = "Placeholder for explanation"
+        if "selected_word_idxs" not in st.session_state:
+            st.session_state.selected_word_idxs = []
         if "reading" not in st.session_state:
             st.session_state.reading = "Placeholder for reading"
 
@@ -133,6 +136,12 @@ def main_page():
                         sensei.reset_texts()
                         sensei.add_texts(st.session_state.detected_texts)
                         
+                        # TODO: if there is selected_word and selected_text
+                            # translate the selected word
+                        # if there is no selected_word but there is selected_text
+                            # translate the selected text
+                        # if there is neither selected_word nor selected_text
+                            # put placeholders
                         result = sensei.translate_text(dt, explain=True)
                         st.session_state.translation = result.get("translation", "Translation not available.")
                         st.session_state.explanation = result.get("explanation", "Explanation not available.")
@@ -150,6 +159,18 @@ def main_page():
 
         # Display tokenized words if a text is selected
         if st.session_state.selected_text:
+            # TODO: capture the selected word/s
+                # save the selected indices st.session_state.selected_word_idxs
+
+                # make a utility function in utils.helper.py
+                    # that takes the selected_text and the selected_word_idxs
+                    # outputs a string such that the selected text is in <target></target> tags
+                    # ex.
+                        # 私の<target>頭が痛い</target>ですよ。
+                    # if the selected words are dis-joint
+                        # wrap them as if they are joint
+                        # include all words in between in the target
+                        # but maintain the selected indices in selected_word_idxs
 
             words = tokenize_japanese_text(st.session_state.selected_text)
             st.subheader("Individual Words:")
@@ -161,12 +182,31 @@ def main_page():
                 gap = None,
             ):
                 # add buttons for the words
-                # TODO: add funcitonality
                 for i, word in enumerate(words):
+                    is_word_selected = i in st.session_state.selected_word_idxs
+                    button_type = "primary" if is_word_selected else "secondary"
+
+                    def toggle_word_selection(word_idx):
+                        if word_idx in st.session_state.selected_word_idxs:
+                            st.session_state.selected_word_idxs.remove(word_idx)
+                        else:
+                            st.session_state.selected_word_idxs.append(word_idx)
+                        st.session_state.selected_word_idxs.sort() # Keep indices sorted
+
                     st.button(
                         word,
                         key=f"word_{i}",
+                        type=button_type,
+                        on_click=toggle_word_selection,
+                        args=(i,)
                     )
+
+                # TEMP
+                st.write(f"Selected word indices: {st.session_state.selected_word_idxs}")
+                st.write("Target Words:", label_target_words(
+                    st.session_state.selected_text,
+                    st.session_state.selected_word_idxs,
+                ))
 
     with right_column:
         st.subheader("Reading")
