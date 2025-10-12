@@ -23,6 +23,39 @@ if "selected_screen_index" not in st.session_state:
 if "ocr_method" not in st.session_state:
     st.session_state.ocr_method = initial_settings.get("ocr_method", "gemini") # Default to Gemini
 
+def update_translation_display():
+    if st.session_state.selected_text:
+        sensei = st.session_state.sensei_engine
+        sensei.reset_texts()
+        sensei.add_texts(st.session_state.detected_texts)
+
+        target_words_input = None
+        if st.session_state.selected_word_idxs:
+            target_words_input = label_target_words(
+                st.session_state.selected_text,
+                st.session_state.selected_word_idxs
+            )
+
+        current_detected_text = None
+        for dt in st.session_state.detected_texts:
+            if dt.text == st.session_state.selected_text:
+                current_detected_text = dt
+                break
+        
+        if current_detected_text:
+            result = sensei.translate_text(current_detected_text, explain=True, target_words=target_words_input)
+            st.session_state.translation = result.get("translation", "Translation not available.")
+            st.session_state.explanation = result.get("explanation", "Explanation not available.")
+            st.session_state.reading = sensei.add_furigana(current_detected_text)
+        else:
+            st.session_state.translation = "Error: Selected text not found in detected texts."
+            st.session_state.explanation = "Error: Selected text not found in detected texts."
+            st.session_state.reading = "Error: Selected text not found in detected texts."
+    else:
+        st.session_state.translation = "Placeholder for translation"
+        st.session_state.explanation = "Placeholder for explanation"
+        st.session_state.reading = "Placeholder for reading"
+
 def main_page():
     header_cols = st.columns([0.8, 0.2])
     with header_cols[0]:
@@ -101,14 +134,8 @@ def main_page():
 
                     def set_selected_text_merged(dt: DetectedText):
                         st.session_state.selected_text = dt.text
-                        sensei = st.session_state.sensei_engine
-                        sensei.reset_texts()
-                        sensei.add_texts(st.session_state.detected_texts) # Use original detected texts as context
-                        
-                        result = sensei.translate_text(dt, explain=True)
-                        st.session_state.translation = result.get("translation", "Translation not available.")
-                        st.session_state.explanation = result.get("explanation", "Explanation not available.")
-                        st.session_state.reading = sensei.add_furigana(dt)
+                        st.session_state.selected_word_idxs = [] # Clear word selection when a new sentence is selected
+                        update_translation_display()
 
                     if st.button(
                         merged_text.text,
@@ -132,20 +159,8 @@ def main_page():
                     # Define a callback function for the button
                     def set_selected_text(dt: DetectedText):
                         st.session_state.selected_text = dt.text
-                        sensei = st.session_state.sensei_engine
-                        sensei.reset_texts()
-                        sensei.add_texts(st.session_state.detected_texts)
-                        
-                        # TODO: if there is selected_word and selected_text
-                            # translate the selected word
-                        # if there is no selected_word but there is selected_text
-                            # translate the selected text
-                        # if there is neither selected_word nor selected_text
-                            # put placeholders
-                        result = sensei.translate_text(dt, explain=True)
-                        st.session_state.translation = result.get("translation", "Translation not available.")
-                        st.session_state.explanation = result.get("explanation", "Explanation not available.")
-                        st.session_state.reading = sensei.add_furigana(dt)
+                        st.session_state.selected_word_idxs = [] # Clear word selection when a new text is selected
+                        update_translation_display()
         
                     # Make each detected text clickable
                     if st.button(
@@ -192,6 +207,7 @@ def main_page():
                         else:
                             st.session_state.selected_word_idxs.append(word_idx)
                         st.session_state.selected_word_idxs.sort() # Keep indices sorted
+                        update_translation_display() # Trigger translation update
 
                     st.button(
                         word,
@@ -202,11 +218,11 @@ def main_page():
                     )
 
                 # TEMP
-                st.write(f"Selected word indices: {st.session_state.selected_word_idxs}")
-                st.write("Target Words:", label_target_words(
-                    st.session_state.selected_text,
-                    st.session_state.selected_word_idxs,
-                ))
+                # st.write(f"Selected word indices: {st.session_state.selected_word_idxs}")
+                # st.write("Target Words:", label_target_words(
+                #     st.session_state.selected_text,
+                #     st.session_state.selected_word_idxs,
+                # ))
 
     with right_column:
         st.subheader("Reading")

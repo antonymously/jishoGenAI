@@ -37,6 +37,13 @@ class SetsumeiSensei:
             The TARGET TEXT may contain <target></target> tags.
             If so, you are only to translate and/or explain the text within the TARGET TAGS.
             The rest of the TARGET TEXT is provided only for context.
+
+            For example:
+                TARGET TEXT:
+                私の<target>頭</target>が痛いですよ
+
+                TRANSLATION:
+                head
         ''')
 
         self.translate_only_system_prompt = self.base_system_prompt + dedent('''
