@@ -24,6 +24,8 @@ if "ocr_method" not in st.session_state:
     st.session_state.ocr_method = initial_settings.get("ocr_method", "gemini") # Default to Gemini
 
 def update_translation_display():
+    # DONE: simply provide target_words as target_text
+
     if st.session_state.selected_text:
         sensei = st.session_state.sensei_engine
         sensei.reset_texts()
@@ -31,9 +33,12 @@ def update_translation_display():
 
         target_words_input = None
         if st.session_state.selected_word_idxs:
-            target_words_input = label_target_words(
-                st.session_state.selected_text,
-                st.session_state.selected_word_idxs
+
+            start_idx = min(st.session_state.selected_word_idxs)
+            end_idx = max(st.session_state.selected_word_idxs)
+
+            target_words_input = "".join(
+                st.session_state.tokenized_words[start_idx:end_idx + 1]
             )
 
         current_detected_text = None
@@ -43,10 +48,24 @@ def update_translation_display():
                 break
         
         if current_detected_text:
-            result = sensei.translate_text(current_detected_text, explain=True, target_words=target_words_input)
+            if st.session_state.selected_word_idxs:
+                target_word_dt = DetectedText(
+                    text = target_words_input
+                )
+                result = sensei.translate_text(
+                    target_word_dt, 
+                    explain=True, 
+                )
+                reading = sensei.add_furigana(target_word_dt)
+            else:
+                result = sensei.translate_text(
+                    current_detected_text, 
+                    explain=True, 
+                )
+                reading = sensei.add_furigana(current_detected_text)
             st.session_state.translation = result.get("translation", "Translation not available.")
             st.session_state.explanation = result.get("explanation", "Explanation not available.")
-            st.session_state.reading = sensei.add_furigana(current_detected_text)
+            st.session_state.reading = reading
         else:
             st.session_state.translation = "Error: Selected text not found in detected texts."
             st.session_state.explanation = "Error: Selected text not found in detected texts."
@@ -160,6 +179,11 @@ def main_page():
                     def set_selected_text(dt: DetectedText):
                         st.session_state.selected_text = dt.text
                         st.session_state.selected_word_idxs = [] # Clear word selection when a new text is selected
+                        
+                        # tokenize words and set to state
+                        words = tokenize_japanese_text(st.session_state.selected_text)
+                        st.session_state.tokenized_words = words
+                        
                         update_translation_display()
         
                     # Make each detected text clickable
@@ -187,7 +211,6 @@ def main_page():
                     # include all words in between in the target
                     # but maintain the selected indices in selected_word_idxs
 
-            words = tokenize_japanese_text(st.session_state.selected_text)
             st.subheader("Individual Words:")
 
             # Create a container
@@ -197,9 +220,13 @@ def main_page():
                 gap = None,
             ):
                 # add buttons for the words
-                for i, word in enumerate(words):
+                for i, word in enumerate(st.session_state.tokenized_words):
                     is_word_selected = i in st.session_state.selected_word_idxs
                     button_type = "primary" if is_word_selected else "secondary"
+
+                    # NOTE: target_text is not working well
+                        # let's just provide the selected words as the target_text
+                        # and leave the rest to context
 
                     def toggle_word_selection(word_idx):
                         if word_idx in st.session_state.selected_word_idxs:
