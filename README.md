@@ -3,6 +3,9 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 
 'JishoGenai' is a play on words - 辞書じゃない (jisho jyanai) means 'not a dictionary'. Because it is not simply a dictionary that looks up the direct translation of the in-game text, but uses AI to explain the meaning and usage in context.
 
+## Demo
+[![jishoGenAI demo video](https://img.youtube.com/vi/rlpXhu6bODQ/maxresdefault.jpg)](https://www.youtube.com/watch?v=rlpXhu6bODQ)
+
 ## TODO
 
 - [x] Make functionality to merge detected texts by bounding box or semantics
