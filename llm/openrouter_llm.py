@@ -84,6 +84,21 @@ def _optional_headers() -> dict:
     return headers
 
 
+def _reasoning_request_kwargs(disable_reasoning: bool) -> dict:
+    '''
+    Build the extra request body used to turn reasoning/thinking off.
+
+    OpenRouter normalizes this across providers: `reasoning.enabled=false`
+    disables reasoning where the model allows it (see
+    https://openrouter.ai/docs/guides/best-practices/reasoning-tokens).
+    Models that mandate reasoning reject/ignore this, so callers should leave
+    `disable_reasoning=False` for those.
+    '''
+    if not disable_reasoning:
+        return {}
+    return {"extra_body": {"reasoning": {"enabled": False}}}
+
+
 class OpenRouterLLM(BaseLLM):
     '''
     A stateless LLM for single-turn conversations via OpenRouter.
@@ -95,10 +110,12 @@ class OpenRouterLLM(BaseLLM):
         system_message: str = "You are a helpful assistant.",
         model: str = DEFAULT_OPENROUTER_MODEL,
         api_key: Optional[str] = None,
+        disable_reasoning: bool = True,
     ):
         self.model = model
         self.system_message = system_message
         self.api_key = api_key
+        self.disable_reasoning = disable_reasoning
 
     def invoke(self, contents) -> str:
         messages = []
@@ -110,6 +127,7 @@ class OpenRouterLLM(BaseLLM):
             model = self.model,
             messages = messages,
             extra_headers = _optional_headers() or None,
+            **_reasoning_request_kwargs(self.disable_reasoning),
         )
         return response.choices[0].message.content or ""
 
@@ -124,10 +142,12 @@ class OpenRouterChatLLM(ChatLLM):
         system_message: str = "You are a helpful assistant.",
         model: str = DEFAULT_OPENROUTER_MODEL,
         api_key: Optional[str] = None,
+        disable_reasoning: bool = True,
     ):
         super().__init__(system_message)
         self.model = model
         self.api_key = api_key
+        self.disable_reasoning = disable_reasoning
         self.reset_chat()
 
     def reset_chat(self):
@@ -142,6 +162,7 @@ class OpenRouterChatLLM(ChatLLM):
             model = self.model,
             messages = self.history,
             extra_headers = _optional_headers() or None,
+            **_reasoning_request_kwargs(self.disable_reasoning),
         )
         message = response.choices[0].message
         self.history.append({"role": "assistant", "content": message.content})

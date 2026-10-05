@@ -244,6 +244,20 @@ def get_models(provider: str, capability: str = "text") -> List[str]:
     return []
 
 
+def openrouter_model_reasoning_mandatory(model: Optional[str]) -> bool:
+    '''
+    True when OpenRouter reports the model mandates reasoning (so it cannot be
+    disabled). Unknown/offline models return False, so reasoning is disabled by
+    default for everything we can.
+    '''
+    if not model:
+        return False
+    for entry in fetch_openrouter_models():
+        if entry.get("id") == model:
+            return bool((entry.get("reasoning") or {}).get("mandatory"))
+    return False
+
+
 def resolve_model(provider: str, model: Optional[str], capability: str = "text") -> str:
     '''
     Validate a model id against the available list, falling back to the
@@ -278,6 +292,7 @@ def create_llm(
             system_message = system_message,
             model = model,
             api_key = api_key,
+            disable_reasoning = not openrouter_model_reasoning_mandatory(model),
         )
     return GeminiLLM(
         system_message = system_message,
@@ -301,6 +316,7 @@ def create_chat_llm(
             system_message = system_message,
             model = model,
             api_key = api_key,
+            disable_reasoning = not openrouter_model_reasoning_mandatory(model),
         )
     return GeminiChatLLM(
         system_message = system_message,
