@@ -20,7 +20,7 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [ ] Add options to use screenshot as additional context to text merging, translation and explanation. Use GeminiLLM class and add the image to the contents during invoke().
 - [ ] Make LLM invocations asynchronous
 - [ ] Generate a nice logo.
-- [ ] Add screenshots and sample footage to readme
+- [x] Add screenshots and sample footage to readme
 - [ ] Add usage guide to readme
 - [ ] Add more memory to Setsumei Sensei. Recall text from previous screens to gain more context.
 - [ ] Allow user to highlight/select text to be explained if it is a substring of the detected text.
