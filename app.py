@@ -1,5 +1,5 @@
 import streamlit as st
-import os
+from pathlib import Path
 from utils.screens import screenshot_monitor
 from ocr.ocr_engine import extract_japanese_text_from_image, DetectedText
 from sensei.sensei_engine import SetsumeiSensei
@@ -165,10 +165,13 @@ def main_page():
             # Take the screenshot
             screenshot_img = screenshot_monitor(monitor_to_screenshot)
             
-            # Define the save path
-            screenshot_dir = "./data/screenshots"
-            os.makedirs(screenshot_dir, exist_ok=True)
-            save_path = os.path.join(screenshot_dir, "test_app_screenshot.png")
+            # Define the save path.
+            # NOTE: anchored to the project directory (not the process working
+            # directory) so saving works no matter where Streamlit is launched
+            # from; a CWD-relative path can raise OSError [Errno 22] on Windows.
+            screenshot_dir = Path(__file__).resolve().parent / "data" / "screenshots"
+            screenshot_dir.mkdir(parents=True, exist_ok=True)
+            save_path = screenshot_dir / "test_app_screenshot.png"
             
             # Save the screenshot
             screenshot_img.save(save_path)

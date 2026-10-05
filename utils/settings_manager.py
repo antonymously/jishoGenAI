@@ -1,7 +1,10 @@
 import json
 import os
+from pathlib import Path
 
-SETTINGS_FILE = "settings.json"
+# Anchor the settings file to the project root instead of the process working
+# directory, so settings are found/saved regardless of where the app is launched.
+SETTINGS_FILE = str(Path(__file__).resolve().parent.parent / "settings.json")
 
 def load_settings():
     if os.path.exists(SETTINGS_FILE):
