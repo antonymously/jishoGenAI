@@ -27,7 +27,7 @@ AI companion for English speakers learning Japanese by playing video games in Ja
 - [ ] Allow user to ask follow-up questions on the explanation of Setsumei Sensei.
 - [ ] Option to automatically screenshot and analyze while gameplay is happening.
 - [ ] Configurations for current learning level of user.
-- [ ] Allow use of other LLM providers.
+- [x] Allow use of other LLM providers (Gemini, OpenRouter).
 - [ ] Allow use of local LLM.
 - [ ] Provide alternative OCR options.
 - [ ] Fine tune a small model for OCR on Japanese game screenshots.
@@ -61,21 +61,32 @@ Install the required Python packages using pip:
 pip install -r requirements.txt
 ```
 
-### 4. Set up Gemini API Key
+### 4. Set up API Key(s)
 
-jishoGenAI uses the Gemini API for its language model. You'll need to obtain an API key from Google AI Studio.
+jishoGenAI can source its language and vision models from either Google Gemini or [OpenRouter](https://openrouter.ai/). Configure whichever provider(s) you want to use.
 
-1.  Go to [Google AI Studio](https://aistudio.google.com/).
-2.  Create a new API key.
-3.  Create a file named `.env` in the root directory of the project (where `app.py` and `requirements.txt` are located).
-4.  Add your Gemini API key to the `.env` file in the following format:
+1.  Create a file named `.env` in the root directory of the project (where `app.py` and `requirements.txt` are located).
+2.  Add the API key(s) you have in the following format:
 
     ```
     GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
+    OPENROUTER_API_KEY="YOUR_OPENROUTER_API_KEY_HERE"
     ```
-    Replace `"YOUR_GEMINI_API_KEY_HERE"` with the actual API key you obtained.
 
-### 5. Run the Application
+    - **Gemini**: obtain an API key from [Google AI Studio](https://aistudio.google.com/).
+    - **OpenRouter**: obtain an API key from [openrouter.ai/keys](https://openrouter.ai/keys). You can also paste the OpenRouter key directly into the in-app **Settings** page (kept for the current session only).
+
+### 5. Select a Provider and Model
+
+Open the **Settings** page in the app to choose:
+
+- **LLM Provider** — Google Gemini or OpenRouter.
+- **LLM (text) Model** — used for translation, explanation, furigana, and text merging.
+- **Vision Model (for OCR)** — used to read Japanese text from screenshots.
+
+The OpenRouter model list is fetched live from OpenRouter's public models API; the Gemini list is curated. Your selections are saved to `settings.json`.
+
+### 6. Run the Application
 
 Once all dependencies are installed and your API key is set up, you can run the Streamlit application:
 

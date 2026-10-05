@@ -8,6 +8,11 @@ from utils.screens import get_monitors # Import get_monitors here
 from utils.settings_manager import load_settings
 from sensei.utils import tokenize_japanese_text # Import the new tokenizer
 from utils.helper import label_target_words
+from llm.utils import (
+    PROVIDERS,
+    PROVIDER_GEMINI,
+    get_default_model,
+)
 
 st.set_page_config(layout="wide")
 
@@ -20,8 +25,32 @@ if "page" not in st.session_state:
 # Initialize session state with loaded settings or defaults
 if "selected_screen_index" not in st.session_state:
     st.session_state.selected_screen_index = initial_settings.get("selected_screen_index", 1) # Default to the 2nd screen
+
+# OCR method: "llm" (vision model) or "easyocr". Migrate the legacy "gemini" value.
 if "ocr_method" not in st.session_state:
-    st.session_state.ocr_method = initial_settings.get("ocr_method", "gemini") # Default to Gemini
+    st.session_state.ocr_method = initial_settings.get("ocr_method", "llm")
+if st.session_state.ocr_method == "gemini":
+    st.session_state.ocr_method = "llm"
+
+# LLM provider + model selection
+if "llm_provider" not in st.session_state:
+    st.session_state.llm_provider = initial_settings.get("llm_provider", PROVIDER_GEMINI)
+if st.session_state.llm_provider not in PROVIDERS:
+    st.session_state.llm_provider = PROVIDER_GEMINI
+
+if "llm_model" not in st.session_state:
+    st.session_state.llm_model = (
+        initial_settings.get("llm_model")
+        or get_default_model(st.session_state.llm_provider, "text")
+    )
+if "vision_model" not in st.session_state:
+    st.session_state.vision_model = (
+        initial_settings.get("vision_model")
+        or get_default_model(st.session_state.llm_provider, "vision")
+    )
+# Session-only OpenRouter API key override (persisted keys belong in .env).
+if "openrouter_api_key" not in st.session_state:
+    st.session_state.openrouter_api_key = ""
 
 def update_translation_display():
     # DONE: simply provide target_words as target_text
@@ -84,8 +113,19 @@ def main_page():
             st.session_state.page = "settings"
         st.button("Settings", on_click=navigate_to_settings)
 
-    if "sensei_engine" not in st.session_state:
-        st.session_state.sensei_engine = SetsumeiSensei()
+    # (Re)build the Sensei engine whenever the provider/model/key changes.
+    llm_signature = (
+        st.session_state.llm_provider,
+        st.session_state.llm_model,
+        st.session_state.get("openrouter_api_key", ""),
+    )
+    if "sensei_engine" not in st.session_state or st.session_state.get("sensei_signature") != llm_signature:
+        st.session_state.sensei_engine = SetsumeiSensei(
+            provider = st.session_state.llm_provider,
+            model = st.session_state.llm_model,
+            api_key = st.session_state.get("openrouter_api_key") or None,
+        )
+        st.session_state.sensei_signature = llm_signature
 
     # Initialize session state for screen selection if not already present
     if "selected_screen" not in st.session_state:
@@ -134,17 +174,23 @@ def main_page():
             screenshot_img.save(save_path)
 
             # Perform OCR on the screenshot
-            detected_texts = extract_japanese_text_from_image(screenshot_img, method=st.session_state.ocr_method)
+            detected_texts = extract_japanese_text_from_image(
+                screenshot_img,
+                method=st.session_state.ocr_method,
+                provider=st.session_state.llm_provider,
+                model=st.session_state.vision_model,
+                api_key=st.session_state.get("openrouter_api_key") or None,
+            )
 
             # Store detected texts in session state
             st.session_state.detected_texts = detected_texts
-            if st.session_state.ocr_method != "gemini":
+            if st.session_state.ocr_method != "llm":
                 st.session_state.merged_texts = st.session_state.sensei_engine.merge_texts(detected_texts)
             else:
-                st.session_state.merged_texts = [] # Clear merged texts if Gemini is used
+                st.session_state.merged_texts = [] # Clear merged texts if the LLM vision OCR is used
 
         # Display detected sentences/phrases if available
-        if st.session_state.ocr_method != "gemini" and 'merged_texts' in st.session_state and st.session_state.merged_texts:
+        if st.session_state.ocr_method != "llm" and 'merged_texts' in st.session_state and st.session_state.merged_texts:
             st.subheader("Detected Japanese Sentences/Phrases:")
             with st.container(height=200, gap=None):
                 for i, merged_text in enumerate(st.session_state.merged_texts):

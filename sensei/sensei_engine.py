@@ -4,7 +4,11 @@ import json
 from typing import Optional
 
 from llm.base_llm import BaseLLM
-from llm.gemini_llm import GeminiChatLLM, GeminiLLM
+from llm.utils import (
+    PROVIDER_GEMINI,
+    create_llm,
+    get_default_model,
+)
 from ocr.ocr_engine import DetectedText
 from .utils import trim_json_from_text
 
@@ -15,10 +19,18 @@ class SetsumeiSensei:
 
     def __init__(
         self,
-        llm_cls = GeminiLLM,
-        chat_llm_cls = GeminiChatLLM,
+        provider: str = PROVIDER_GEMINI,
+        model: Optional[str] = None,
+        api_key: Optional[str] = None,
+        llm_cls = None,
+        chat_llm_cls = None,
     ):
+        self.provider = provider
+        self.model = model or get_default_model(provider, "text")
+        self.api_key = api_key
+        # Optional explicit class override (kept for backwards compatibility).
         self.llm_cls = llm_cls
+        self.chat_llm_cls = chat_llm_cls
 
         self.reset_texts()
 
@@ -111,19 +123,34 @@ class SetsumeiSensei:
             RESPONSE: トイレならあの青い（あおい）建物（たてもの）にあるよ
         ''')
 
-        self.llm_translate_explain = self.llm_cls(
-            model = 'gemini-2.0-flash',
-            system_message = self.translate_explain_system_prompt
+        self.llm_translate_explain = self._make_llm(
+            self.translate_explain_system_prompt
         )
 
-        self.llm_merge_texts = self.llm_cls(
-            model = 'gemini-2.0-flash',
-            system_message = self.merge_texts_system_prompt
+        self.llm_merge_texts = self._make_llm(
+            self.merge_texts_system_prompt
         )
 
-        self.llm_add_furigana = self.llm_cls(
-            model = 'gemini-2.0-flash',
-            system_message = self.add_furigana_system_prompt
+        self.llm_add_furigana = self._make_llm(
+            self.add_furigana_system_prompt
+        )
+
+    def _make_llm(self, system_message: str) -> BaseLLM:
+        '''
+        Build a stateless LLM for the configured provider/model.
+
+        Falls back to an explicit llm_cls override when one was provided.
+        '''
+        if self.llm_cls is not None:
+            return self.llm_cls(
+                model = self.model,
+                system_message = system_message,
+            )
+        return create_llm(
+            provider = self.provider,
+            model = self.model,
+            system_message = system_message,
+            api_key = self.api_key,
         )
 
     def reset_texts(self):

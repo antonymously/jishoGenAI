@@ -4,5 +4,7 @@ Pillow
 numpy
 python-dotenv
 google-generativeai
+google-genai
+openai
 mss
 torch

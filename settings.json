@@ -1,4 +1,7 @@
 {
     "selected_screen_index": 1,
-    "ocr_method": "gemini"
+    "ocr_method": "llm",
+    "llm_provider": "gemini",
+    "llm_model": "gemini-flash-latest",
+    "vision_model": "gemini-flash-latest"
 }

@@ -6,13 +6,13 @@ from typing import Optional, List
 import json
 from textwrap import dedent
 
-from llm.gemini_llm import GeminiLLM
+from llm.utils import PROVIDER_GEMINI, create_llm
 
 # Initialize EasyOCR reader
 EASYOCR_READER = easyocr.Reader(['ja', 'en'])
 
-# Gemini LLM system prompt for OCR
-GEMINI_OCR_SYSTEM_PROMPT = dedent('''
+# LLM system prompt for OCR
+OCR_SYSTEM_PROMPT = dedent('''
     An image will be provided, which will likely be a video game screen.
     Your job is to detect all the Japanese texts in the screen.
 
@@ -79,13 +79,24 @@ def _extract_japanese_text_with_easyocr(image: Image.Image, confidence_threshold
         print(f"Error extracting text with EasyOCR: {e}")
     return detected_texts
 
-def _extract_japanese_text_with_gemini(image: Image.Image) -> List[DetectedText]:
+def _extract_japanese_text_with_llm(
+    image: Image.Image,
+    provider: str = PROVIDER_GEMINI,
+    model: Optional[str] = None,
+    api_key: Optional[str] = None,
+) -> List[DetectedText]:
     """
-    Extracts Japanese text from an image object using Gemini LLM.
+    Extracts Japanese text from an image object using a vision-capable LLM.
     """
     detected_texts = []
     try:
-        llm = GeminiLLM(system_message=GEMINI_OCR_SYSTEM_PROMPT)
+        llm = create_llm(
+            provider = provider,
+            model = model,
+            system_message = OCR_SYSTEM_PROMPT,
+            api_key = api_key,
+            capability = "vision",
+        )
         res = llm.invoke(contents=["Image:", image])
         
         try:
@@ -95,32 +106,42 @@ def _extract_japanese_text_with_gemini(image: Image.Image) -> List[DetectedText]
                     if isinstance(text_item, str):
                         detected_texts.append(DetectedText(text=text_item))
             else:
-                print(f"Gemini response was not a list: {res}")
+                print(f"LLM response was not a list: {res}")
         except json.JSONDecodeError:
-            print(f"Could not parse Gemini response as JSON: {res}")
+            print(f"Could not parse LLM response as JSON: {res}")
             if isinstance(res, str) and res.strip():
                 detected_texts.append(DetectedText(text=res.strip()))
 
     except Exception as e:
-        print(f"Error extracting text with Gemini: {e}")
+        print(f"Error extracting text with LLM: {e}")
     return detected_texts
 
-def extract_japanese_text_from_image(image: Image.Image, method: str = "easyocr", confidence_threshold: float = 0.5) -> List[DetectedText]:
+def extract_japanese_text_from_image(
+    image: Image.Image,
+    method: str = "easyocr",
+    confidence_threshold: float = 0.5,
+    provider: str = PROVIDER_GEMINI,
+    model: Optional[str] = None,
+    api_key: Optional[str] = None,
+) -> List[DetectedText]:
     """
     Extracts Japanese text from an image object using the specified OCR method.
 
     Args:
         image: A PIL Image object.
-        method: The OCR method to use ("easyocr" or "gemini").
+        method: The OCR method to use ("easyocr" or "llm"/"gemini").
         confidence_threshold: Minimum confidence score for EasyOCR detections to be included.
+        provider: LLM provider for the vision model ("gemini" or "openrouter").
+        model: Vision model id. Defaults to the provider default.
+        api_key: Optional API key override for the provider.
 
     Returns:
         List[DetectedText]: A list of detected Japanese texts.
     """
     if method == "easyocr":
         return _extract_japanese_text_with_easyocr(image, confidence_threshold)
-    elif method == "gemini":
-        return _extract_japanese_text_with_gemini(image)
+    elif method in ("gemini", "llm"):
+        return _extract_japanese_text_with_llm(image, provider, model, api_key)
     else:
         print(f"Unknown OCR method: {method}")
         return []
