@@ -1,7 +1,7 @@
 {
     "selected_screen_index": 1,
     "ocr_method": "llm",
-    "llm_provider": "gemini",
-    "llm_model": "gemini-flash-latest",
-    "vision_model": "gemini-flash-latest"
+    "llm_provider": "openrouter",
+    "llm_model": "deepseek/deepseek-v4.1-flash",
+    "vision_model": "deepseek/deepseek-v4.1-flash"
 }
