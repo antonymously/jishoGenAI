@@ -1,6 +1,7 @@
 {
     "selected_screen_index": 1,
     "ocr_method": "llm",
+    "downscale_screenshot": true,
     "llm_provider": "openrouter",
     "llm_model": "deepseek/deepseek-v4.1-flash",
     "vision_model": "deepseek/deepseek-v4.1-flash"

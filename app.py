@@ -32,6 +32,10 @@ if "ocr_method" not in st.session_state:
 if st.session_state.ocr_method == "gemini":
     st.session_state.ocr_method = "llm"
 
+# Downscale the screenshot before vision OCR (faster, lower bandwidth).
+if "downscale_screenshot" not in st.session_state:
+    st.session_state.downscale_screenshot = initial_settings.get("downscale_screenshot", True)
+
 # LLM provider + model selection
 if "llm_provider" not in st.session_state:
     st.session_state.llm_provider = initial_settings.get("llm_provider", PROVIDER_GEMINI)
@@ -183,6 +187,7 @@ def main_page():
                 provider=st.session_state.llm_provider,
                 model=st.session_state.vision_model,
                 api_key=st.session_state.get("openrouter_api_key") or None,
+                downscale=st.session_state.downscale_screenshot,
             )
 
             # Store detected texts in session state

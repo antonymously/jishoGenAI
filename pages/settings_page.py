@@ -63,6 +63,18 @@ def settings_page():
         )
         st.session_state.ocr_method = selected_ocr_method
 
+        # Toggle: shrink the screenshot before sending it to the vision model.
+        # Speeds up OCR (smaller upload + fewer image tokens) but can hurt
+        # accuracy on very small on-screen text, so it stays user-controllable.
+        st.session_state.downscale_screenshot = st.checkbox(
+            "Downscale screenshot before OCR (faster)",
+            value=st.session_state.get("downscale_screenshot", True),
+            key="downscale_screenshot_checkbox",
+            help="Shrinks the screenshot to 1280px on its longest side before the vision "
+                 "model sees it. Turn this off if OCR accuracy drops on small text. "
+                 "Only affects the 'llm' OCR method; EasyOCR always runs at full resolution.",
+        )
+
         st.divider()
 
         # Dropdown for the LLM provider (Gemini or OpenRouter)
@@ -144,6 +156,7 @@ def settings_page():
         settings = {
             "selected_screen_index": st.session_state.selected_screen_index,
             "ocr_method": st.session_state.ocr_method,
+            "downscale_screenshot": st.session_state.get("downscale_screenshot", True),
             "llm_provider": st.session_state.llm_provider,
             "llm_model": st.session_state.llm_model,
             "vision_model": st.session_state.vision_model,
